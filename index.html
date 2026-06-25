@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#101211" />
+    <meta name="application-name" content="Linux Alarm Drill" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Linux Alarm" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Linux Alarm Drill</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="./assets/icon-180.png" />
+    <link rel="icon" href="./assets/icon-192.png" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="top-bar" aria-label="Alarm status">
+        <div>
+          <p class="eyebrow">Linux Alarm Drill</p>
+          <h1>解かないと止まらない目覚まし</h1>
+        </div>
+        <div class="status-panel" aria-live="polite">
+          <span id="alarmState" class="status-pill">待機中</span>
+          <strong id="clockNow">--:--:--</strong>
+        </div>
+      </section>
+
+      <section class="layout-grid">
+        <aside class="control-panel" aria-label="Alarm settings">
+          <div class="section-head">
+            <h2>アラーム</h2>
+            <p id="nextAlarmText">時刻を設定してください。</p>
+          </div>
+
+          <form id="alarmForm" class="alarm-form">
+            <label>
+              <span>時刻</span>
+              <input id="alarmTime" type="time" required />
+            </label>
+
+            <label>
+              <span>停止に必要な正解数</span>
+              <input id="requiredCorrect" type="number" min="1" max="10" value="3" />
+            </label>
+
+            <label class="check-row setting-toggle">
+              <input id="keepAwake" type="checkbox" checked />
+              <span>スマホ使用中は画面をスリープさせない</span>
+            </label>
+
+            <fieldset>
+              <legend>出題範囲</legend>
+              <label class="check-row">
+                <input type="checkbox" name="category" value="field" checked />
+                <span>現場頻出</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="category" value="lpic1" checked />
+                <span>LPIC-1</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="category" value="lpic2" checked />
+                <span>LPIC-2</span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="category" value="deep" checked />
+                <span>マニアック</span>
+              </label>
+            </fieldset>
+
+            <div class="button-row">
+              <button class="primary" type="submit">設定</button>
+              <button id="testAlarm" type="button">鳴動テスト</button>
+              <button id="installApp" type="button" hidden>インストール</button>
+            </div>
+          </form>
+
+          <div class="progress-block">
+            <div class="progress-label">
+              <span>停止進捗</span>
+              <strong id="scoreText">0 / 3</strong>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+              <span id="progressBar"></span>
+            </div>
+          </div>
+
+          <div class="terminal-art" aria-hidden="true">
+            <div class="terminal-top">
+              <span></span><span></span><span></span>
+            </div>
+            <pre><code>$ journalctl -xe
+$ find /var/log -type f -mtime -1
+$ ss -lntp
+$ awk '{print $1}' access.log</code></pre>
+          </div>
+        </aside>
+
+        <section class="quiz-panel" aria-label="Question area">
+          <div id="sleepScreen" class="sleep-screen">
+            <p class="eyebrow">Ready</p>
+            <h2>指定時刻になると問題が始まります</h2>
+            <p>
+              アラーム中は停止ボタンを出しません。設定した数だけ正解すると自動で止まります。
+            </p>
+          </div>
+
+          <div id="quizScreen" class="quiz-screen hidden">
+            <div class="question-meta">
+              <span id="questionCategory">Category</span>
+              <span id="questionType">Type</span>
+            </div>
+            <h2 id="questionText">Question</h2>
+
+            <form id="answerForm" class="answer-form">
+              <div id="optionsArea" class="options-area"></div>
+              <label id="commandAnswerWrap" class="command-answer hidden">
+                <span>コマンドを入力</span>
+                <input id="commandAnswer" type="text" autocomplete="off" spellcheck="false" />
+              </label>
+
+              <div class="hint-box">
+                <strong>ヒント</strong>
+                <p id="hintText">Hint</p>
+              </div>
+
+              <p id="feedbackText" class="feedback" aria-live="assertive"></p>
+
+              <div class="button-row">
+                <button class="primary danger-pulse" type="submit">解答</button>
+                <button id="nextQuestion" type="button" disabled>次の問題</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="./questions.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

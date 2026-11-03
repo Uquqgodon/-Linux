@@ -1,4 +1,6 @@
-window.LINUX_ALARM_QUESTIONS = [
+// 基本問題（現場頻出 / LPIC-1 / マニアック）
+// 書式は README.md の「問題の追加」を参照。
+window.LINUX_ALARM_QUESTIONS = (window.LINUX_ALARM_QUESTIONS || []).concat([
   {
     id: "field-find-recent-logs",
     category: "field",
@@ -160,76 +162,6 @@ window.LINUX_ALARM_QUESTIONS = [
     hint: "nice は起動時、renice は実行中プロセス。",
   },
   {
-    id: "lpic2-ip-forward",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "command",
-    text: "IPv4 フォワーディングの現在値を sysctl で確認するコマンドを入力する。",
-    answers: ["sysctl net.ipv4.ip_forward"],
-    match: "orderedTokens",
-    hint: "カーネルパラメータは sysctl で key を指定して確認できる。",
-  },
-  {
-    id: "lpic2-nft-list",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "single",
-    text: "nftables の現在のルールセットを表示するコマンドはどれか。",
-    options: ["nft list ruleset", "iptables-save -nft", "firewall-cmd --runtime-to-permanent", "ip rule list nft"],
-    answer: [0],
-    hint: "nft コマンドは list ruleset で全体を表示できる。",
-  },
-  {
-    id: "lpic2-lvm-extend",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "multi",
-    text: "LVM 論理ボリューム拡張時に関係するコマンドをすべて選べ。",
-    options: ["lvextend", "resize2fs", "xfs_growfs", "mkfs.ext4"],
-    answer: [0, 1, 2],
-    hint: "ファイルシステム作成は既存データを壊す操作。拡張とは別。",
-  },
-  {
-    id: "lpic2-bind-zone-check",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "single",
-    text: "BIND のゾーンファイル構文を確認するコマンドはどれか。",
-    options: ["named-checkzone", "named-checkconf", "dig +trace", "rndc reload"],
-    answer: [0],
-    hint: "設定ファイル全体は named-checkconf、ゾーンファイルは named-checkzone。",
-  },
-  {
-    id: "lpic2-apache-vhost",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "single",
-    text: "Apache httpd の有効な VirtualHost 設定を一覧しやすいコマンドはどれか。",
-    options: ["apachectl -S", "apachectl -M", "apachectl -t -D DUMP_MODULES", "httpd -k graceful"],
-    answer: [0],
-    hint: "-S は VirtualHost と設定解決の確認に使う。",
-  },
-  {
-    id: "lpic2-raid-status",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "command",
-    text: "Linux software RAID の状態を /proc から確認するコマンドを入力する。",
-    answers: ["cat /proc/mdstat"],
-    match: "orderedTokens",
-    hint: "md デバイスの状態は /proc/mdstat に出る。",
-  },
-  {
-    id: "lpic2-postfix-queue",
-    category: "lpic2",
-    level: "LPIC-2",
-    type: "single",
-    text: "Postfix のメールキューを表示するコマンドはどれか。",
-    options: ["postqueue -p", "postconf -n", "newaliases -p", "mailq -d"],
-    answer: [0],
-    hint: "mailq でも表示できるが、選択肢では postqueue の表示オプションを選ぶ。",
-  },
-  {
     id: "deep-lsof-deleted",
     category: "deep",
     level: "マニアック",
@@ -309,4 +241,4 @@ window.LINUX_ALARM_QUESTIONS = [
     match: "orderedTokens",
     hint: "SUID は 4000。find の -perm -MODE は該当ビットがすべて立っているもの。",
   },
-];
+]);

@@ -2,12 +2,19 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#101211" />
-    <meta name="application-name" content="Linuxと目覚めるアラームちゃん" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <meta name="theme-color" content="#0c0f0d" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content="LPIC の問題に正解するまで止まらない目覚ましアラーム。LPIC-2（201/202）対策問題を収録。" />
+    <meta name="application-name" content="アラームちゃん" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Linuxと目覚めるアラームちゃん" />
+    <meta name="apple-mobile-web-app-title" content="アラームちゃん" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
     <title>Linuxと目覚めるアラームちゃん</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="apple-touch-icon" href="./assets/icon-180.png" />
@@ -15,130 +22,327 @@
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <main class="app-shell">
-      <section class="top-bar" aria-label="Alarm status">
-        <div>
+    <div class="app">
+      <!-- ───────── アラーム ───────── -->
+      <section class="view" id="view-alarm" aria-labelledby="alarmHeading">
+        <header class="app-head">
           <p class="eyebrow">Linuxと目覚めるアラームちゃん</p>
-          <h1>解かないと止まらない目覚まし</h1>
+          <h1 id="alarmHeading" class="sr-only">アラーム</h1>
+        </header>
+
+        <div class="clock" aria-live="off">
+          <div class="clock-now" id="clockNow">--:--<span class="clock-sec">--</span></div>
+          <div class="clock-date" id="clockDate"></div>
         </div>
-        <div class="status-panel" aria-live="polite">
-          <span id="alarmState" class="status-pill">待機中</span>
-          <strong id="clockNow">--:--:--</strong>
+
+        <div class="card alarm-card" id="alarmCard">
+          <div class="alarm-row">
+            <label class="time-field">
+              <span class="sr-only">アラーム時刻</span>
+              <span class="time-display" aria-hidden="true">
+                <span id="alarmTimeDisplay">07:00</span>
+                <span class="time-edit">変更</span>
+              </span>
+              <input id="alarmTime" type="time" value="07:00" required />
+            </label>
+            <label class="switch">
+              <input id="alarmEnabled" type="checkbox" role="switch" />
+              <span class="switch-track" aria-hidden="true"></span>
+              <span class="sr-only">アラームをオンにする</span>
+            </label>
+          </div>
+          <p class="alarm-next" id="alarmNext" aria-live="polite">オフ</p>
+          <div class="weekdays" id="weekdays" role="group" aria-label="繰り返す曜日"></div>
+          <p class="missed" id="missedNote" hidden></p>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>停止条件</h2>
+          </div>
+          <div class="stepper">
+            <button class="round-btn" id="reqMinus" type="button" aria-label="正解数を減らす">−</button>
+            <p class="stepper-value"><output id="reqValue">3</output><span>問 正解で停止</span></p>
+            <button class="round-btn" id="reqPlus" type="button" aria-label="正解数を増やす">＋</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>出題範囲</h2>
+            <span class="card-sub" id="alarmPoolCount"></span>
+          </div>
+          <div class="chips" id="alarmCategories" role="group" aria-label="アラームの出題範囲"></div>
+          <p class="note" id="examFocusNote">試験に出やすい問題・間違えた問題ほど出やすくなります。</p>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary btn-block" id="nightBtn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg>
+            おやすみモード
+          </button>
+          <button class="btn btn-block" id="testBtn" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" /><path d="M13.73 21a2 2 0 0 1-3.46 0" /></svg>
+            鳴動テスト（1 問正解で停止）
+          </button>
+        </div>
+
+        <details class="card tips">
+          <summary>確実に鳴らすために</summary>
+          <ul>
+            <li>寝る前に <strong>おやすみモード</strong> にして、画面を点けたまま充電しておくのがいちばん確実です。</li>
+            <li>アプリを閉じたり画面をロックしたりすると、スマホの省電力機能で止まることがあります。</li>
+            <li>iPhone はマナーモードで音が出ないことがあります。鳴動テストで確認してください。</li>
+            <li>通知を許可すると、バックグラウンドでも鳴った瞬間に通知が出ます（端末によります）。</li>
+          </ul>
+        </details>
+      </section>
+
+      <!-- ───────── 学習 ───────── -->
+      <section class="view" id="view-study" aria-labelledby="studyHeading" hidden>
+        <header class="view-head">
+          <h1 id="studyHeading">学習</h1>
+          <p>アラームなしで問題を解く。間違えた問題は記録され、あとで復習できます。</p>
+        </header>
+
+        <div class="quick-grid">
+          <button class="quick" type="button" data-quick="lpic201">
+            <span class="quick-tag">201</span>
+            <span class="quick-title">201 試験</span>
+            <span class="quick-sub" id="quick201Sub">10 問 · 頻出順</span>
+          </button>
+          <button class="quick" type="button" data-quick="lpic202">
+            <span class="quick-tag">202</span>
+            <span class="quick-title">202 試験</span>
+            <span class="quick-sub" id="quick202Sub">10 問 · 頻出順</span>
+          </button>
+          <button class="quick quick-weak" type="button" data-quick="weak">
+            <span class="quick-tag">復習</span>
+            <span class="quick-title">苦手を復習</span>
+            <span class="quick-sub" id="quickWeakSub">0 問</span>
+          </button>
+          <button class="quick" type="button" data-quick="unseen">
+            <span class="quick-tag">NEW</span>
+            <span class="quick-title">未出題に挑戦</span>
+            <span class="quick-sub" id="quickUnseenSub">LPIC-2 · 0 問</span>
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <h2>範囲を選んで出題</h2>
+            <span class="card-sub" id="studyPoolCount"></span>
+          </div>
+          <div class="chips" id="studyCategories" role="group" aria-label="学習の出題範囲"></div>
+
+          <label class="field">
+            <span class="field-label">主題</span>
+            <select id="studyTopic"></select>
+          </label>
+
+          <div class="field">
+            <span class="field-label" id="studyCountLabel">出題数</span>
+            <div class="segmented" role="radiogroup" aria-labelledby="studyCountLabel">
+              <label><input type="radio" name="studyCount" value="10" checked /><span>10</span></label>
+              <label><input type="radio" name="studyCount" value="20" /><span>20</span></label>
+              <label><input type="radio" name="studyCount" value="30" /><span>30</span></label>
+              <label><input type="radio" name="studyCount" value="all" /><span>全部</span></label>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-block" id="studyStart" type="button">この範囲で始める</button>
         </div>
       </section>
 
-      <section class="layout-grid">
-        <aside class="control-panel" aria-label="Alarm settings">
-          <div class="section-head">
-            <h2>アラーム</h2>
-            <p id="nextAlarmText">時刻を設定してください。</p>
-          </div>
+      <!-- ───────── 記録 ───────── -->
+      <section class="view" id="view-stats" aria-labelledby="statsHeading" hidden>
+        <header class="view-head">
+          <h1 id="statsHeading">記録</h1>
+          <p>正答率の低い主題が、次に勉強すべきところです。</p>
+        </header>
 
-          <form id="alarmForm" class="alarm-form">
-            <label>
-              <span>時刻</span>
-              <input id="alarmTime" type="time" required />
-            </label>
+        <div class="tiles">
+          <div class="tile"><span class="tile-value" id="statAnswered">0</span><span class="tile-label">解答数</span></div>
+          <div class="tile"><span class="tile-value" id="statAccuracy">—</span><span class="tile-label">正答率</span></div>
+          <div class="tile"><span class="tile-value" id="statWakeups">0</span><span class="tile-label">起床回数</span></div>
+          <div class="tile"><span class="tile-value" id="statWeak">0</span><span class="tile-label">苦手な問題</span></div>
+        </div>
 
-            <label>
-              <span>停止に必要な正解数</span>
-              <input id="requiredCorrect" type="number" min="1" max="10" value="3" />
-            </label>
+        <div class="card">
+          <div class="card-head"><h2>カテゴリ別</h2></div>
+          <div class="bars" id="categoryBars"></div>
+        </div>
 
-            <label class="check-row setting-toggle">
-              <input id="keepAwake" type="checkbox" checked />
-              <span>スマホ使用中は画面をスリープさせない</span>
-            </label>
+        <div class="card">
+          <div class="card-head"><h2>LPIC-2 主題別</h2></div>
+          <div class="bars" id="topicBars"></div>
+        </div>
 
-            <fieldset>
-              <legend>出題範囲</legend>
-              <label class="check-row">
-                <input type="checkbox" name="category" value="field" checked />
-                <span>現場頻出</span>
-              </label>
-              <label class="check-row">
-                <input type="checkbox" name="category" value="lpic1" checked />
-                <span>LPIC-1</span>
-              </label>
-              <label class="check-row">
-                <input type="checkbox" name="category" value="lpic2" checked />
-                <span>LPIC-2</span>
-              </label>
-              <label class="check-row">
-                <input type="checkbox" name="category" value="deep" checked />
-                <span>マニアック</span>
+        <button class="btn btn-block btn-quiet" id="resetStats" type="button">学習記録をリセット</button>
+      </section>
+
+      <!-- ───────── 設定 ───────── -->
+      <section class="view" id="view-settings" aria-labelledby="settingsHeading" hidden>
+        <header class="view-head">
+          <h1 id="settingsHeading">設定</h1>
+        </header>
+
+        <div class="card list">
+          <label class="list-row">
+            <span class="list-text"><strong>試験の頻出問題を優先</strong><small>LPIC-2 の最頻出問題が多めに出ます</small></span>
+            <span class="switch"><input id="optExamFocus" type="checkbox" role="switch" /><span class="switch-track" aria-hidden="true"></span></span>
+          </label>
+          <label class="list-row">
+            <span class="list-text"><strong>音をだんだん大きく</strong><small>Android のみ。iPhone は端末の音量で鳴ります</small></span>
+            <span class="switch"><input id="optRamp" type="checkbox" role="switch" /><span class="switch-track" aria-hidden="true"></span></span>
+          </label>
+          <label class="list-row">
+            <span class="list-text"><strong>バイブレーション</strong><small>対応している端末のみ</small></span>
+            <span class="switch"><input id="optVibrate" type="checkbox" role="switch" /><span class="switch-track" aria-hidden="true"></span></span>
+          </label>
+          <label class="list-row">
+            <span class="list-text"><strong>予約中は画面をスリープさせない</strong><small>アプリを開いている間だけ有効です</small></span>
+            <span class="switch"><input id="optKeepAwake" type="checkbox" role="switch" /><span class="switch-track" aria-hidden="true"></span></span>
+          </label>
+        </div>
+
+        <div class="card list">
+          <button class="list-row list-button" id="soundPreview" type="button">
+            <span class="list-text"><strong>アラーム音を確認</strong><small>2 秒だけ鳴らします</small></span>
+            <span class="list-action">再生</span>
+          </button>
+          <button class="list-row list-button" id="notifyBtn" type="button">
+            <span class="list-text"><strong>通知</strong><small id="notifyStatus">確認中…</small></span>
+            <span class="list-action" id="notifyAction">許可する</span>
+          </button>
+          <button class="list-row list-button" id="installBtn" type="button" hidden>
+            <span class="list-text"><strong>ホーム画面に追加</strong><small>アプリとして全画面で使えます</small></span>
+            <span class="list-action">追加</span>
+          </button>
+        </div>
+
+        <details class="card tips">
+          <summary>ホーム画面に追加する方法</summary>
+          <ul>
+            <li><strong>iPhone（Safari）</strong>: 共有ボタン → 「ホーム画面に追加」。</li>
+            <li><strong>Android（Chrome）</strong>: メニュー → 「アプリをインストール」または「ホーム画面に追加」。</li>
+            <li>HTTPS（GitHub Pages など）か localhost で開いたときだけ追加できます。</li>
+          </ul>
+        </details>
+
+        <div class="card list">
+          <button class="list-row list-button danger" id="resetAll" type="button">
+            <span class="list-text"><strong>すべてのデータを初期化</strong><small>設定・学習記録を消去します</small></span>
+          </button>
+        </div>
+
+        <p class="about" id="aboutText"></p>
+      </section>
+    </div>
+
+    <nav class="tabbar" aria-label="メインメニュー">
+      <button class="tab is-active" type="button" data-tab="alarm" aria-current="page">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8" /><path d="M12 9v4l2.5 2" /><path d="M5 3 2 6" /><path d="m22 6-3-3" /></svg>
+        <span>アラーム</span>
+      </button>
+      <button class="tab" type="button" data-tab="study">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+        <span>学習</span>
+      </button>
+      <button class="tab" type="button" data-tab="stats">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3v18h18" /><path d="M18 17V9" /><path d="M13 17V5" /><path d="M8 17v-3" /></svg>
+        <span>記録</span>
+      </button>
+      <button class="tab" type="button" data-tab="settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 21v-7" /><path d="M4 10V3" /><path d="M12 21v-9" /><path d="M12 8V3" /><path d="M20 21v-5" /><path d="M20 12V3" /><path d="M1 14h6" /><path d="M9 8h6" /><path d="M17 16h6" /></svg>
+        <span>設定</span>
+      </button>
+    </nav>
+
+    <!-- ───────── 出題画面（アラーム・学習共通） ───────── -->
+    <section class="quiz" id="quiz" role="dialog" aria-modal="true" aria-labelledby="qText" hidden>
+      <header class="quiz-head">
+        <div class="quiz-head-row">
+          <span class="quiz-badge" id="quizBadge">学習</span>
+          <span class="quiz-count" id="quizCount"></span>
+          <button class="icon-btn" id="quizClose" type="button" aria-label="学習を終了">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+          </button>
+        </div>
+        <div class="meter" aria-hidden="true"><span id="quizMeter"></span></div>
+      </header>
+
+      <div class="quiz-scroll" id="quizScroll">
+        <div class="quiz-inner">
+          <div class="q-meta" id="qMeta"></div>
+          <h2 class="q-text" id="qText"></h2>
+          <div id="qCode"></div>
+
+          <form id="answerForm" class="answer-form" novalidate autocomplete="off">
+            <fieldset class="q-fieldset" id="qFieldset">
+              <legend class="sr-only">解答</legend>
+              <div class="q-options" id="qOptions"></div>
+              <label class="q-input" id="qInputWrap" hidden>
+                <span id="qInputLabel">コマンドを入力</span>
+                <input
+                  id="qInput"
+                  type="text"
+                  autocomplete="off"
+                  autocapitalize="none"
+                  autocorrect="off"
+                  spellcheck="false"
+                  enterkeyhint="go"
+                  inputmode="text"
+                />
               </label>
             </fieldset>
-
-            <div class="button-row">
-              <button class="primary" type="submit">設定</button>
-              <button id="testAlarm" type="button">鳴動テスト</button>
-              <button id="installApp" type="button" hidden>インストール</button>
-            </div>
           </form>
 
-          <div class="progress-block">
-            <div class="progress-label">
-              <span>停止進捗</span>
-              <strong id="scoreText">0 / 3</strong>
-            </div>
-            <div class="progress-track" aria-hidden="true">
-              <span id="progressBar"></span>
-            </div>
+          <details class="q-hint" id="qHint">
+            <summary>ヒントを見る</summary>
+            <p id="qHintText"></p>
+          </details>
+
+          <div class="q-result" id="qResult" hidden>
+            <p class="q-result-title" id="qResultTitle"></p>
+            <p class="q-result-answer" id="qResultAnswer"></p>
+            <p class="q-result-explain" id="qResultExplain"></p>
           </div>
+        </div>
+      </div>
 
-          <div class="terminal-art" aria-hidden="true">
-            <div class="terminal-top">
-              <span></span><span></span><span></span>
-            </div>
-            <pre><code>$ journalctl -xe
-$ find /var/log -type f -mtime -1
-$ ss -lntp
-$ awk '{print $1}' access.log</code></pre>
-          </div>
-        </aside>
+      <footer class="quiz-foot">
+        <button class="btn btn-primary btn-block" id="quizAction" type="submit" form="answerForm" disabled>解答する</button>
+      </footer>
+    </section>
 
-        <section class="quiz-panel" aria-label="Question area">
-          <div id="sleepScreen" class="sleep-screen">
-            <p class="eyebrow">Ready</p>
-            <h2>指定時刻になると問題が始まります</h2>
-            <p>
-              アラーム中は停止ボタンを出しません。設定した数だけ正解すると自動で止まります。
-            </p>
-          </div>
+    <!-- ───────── おやすみモード ───────── -->
+    <section class="night" id="night" aria-label="おやすみモード" hidden>
+      <div class="night-body" id="nightBody">
+        <div class="night-clock" id="nightClock">--:--</div>
+        <div class="night-date" id="nightDate"></div>
+        <div class="night-next" id="nightNext"></div>
+      </div>
+      <div class="night-controls" id="nightControls">
+        <p>画面を点けたまま充電しておいてください。</p>
+        <button class="btn" id="nightExit" type="button">おやすみモードを終了</button>
+      </div>
+    </section>
 
-          <div id="quizScreen" class="quiz-screen hidden">
-            <div class="question-meta">
-              <span id="questionCategory">Category</span>
-              <span id="questionType">Type</span>
-            </div>
-            <h2 id="questionText">Question</h2>
+    <!-- ───────── シート・トースト ───────── -->
+    <div class="sheet-backdrop" id="sheet" hidden>
+      <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <h2 class="sheet-title" id="sheetTitle"></h2>
+        <div class="sheet-body" id="sheetBody"></div>
+        <div class="sheet-actions" id="sheetActions"></div>
+      </div>
+    </div>
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-            <form id="answerForm" class="answer-form">
-              <div id="optionsArea" class="options-area"></div>
-              <label id="commandAnswerWrap" class="command-answer hidden">
-                <span>コマンドを入力</span>
-                <input id="commandAnswer" type="text" autocomplete="off" spellcheck="false" />
-              </label>
-
-              <div class="hint-box">
-                <strong>ヒント</strong>
-                <p id="hintText">Hint</p>
-              </div>
-
-              <p id="feedbackText" class="feedback" aria-live="assertive"></p>
-
-              <div class="button-row">
-                <button class="primary danger-pulse" type="submit">解答</button>
-                <button id="nextQuestion" type="button" disabled>次の問題</button>
-              </div>
-            </form>
-          </div>
-        </section>
-      </section>
-    </main>
-
-    <script src="./questions.js"></script>
+    <script src="./matcher.js"></script>
+    <script src="./questions/core.js"></script>
+    <script src="./questions/lpic201.js"></script>
+    <script src="./questions/lpic202.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
